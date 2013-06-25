@@ -1,5 +1,11 @@
 *.py[cod]
 
+# Java code
+*.class
+
+# Emacs
+*~
+
 # C extensions
 *.so
 
