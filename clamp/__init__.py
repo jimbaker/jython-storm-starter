@@ -1,18 +1,21 @@
+import java
 import os
 import os.path
 
 from java.lang.reflect import Modifier
 from org.python.util import CodegenUtils
-from org.python.compiler import JavaMaker
+from org.python.compiler import JavaMaker, ProxyCodeHelpers
 
 
 class SerializableProxies(JavaMaker):
     
-    # def doConstants(self):
-    #     self.classfile.addField("serialVersionUID", CodegenUtils.ci(Long.class), Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL)
-    #     code = self.classfile.addMethod("<clinit>", makeSig("V"), Modifier.STATIC)
-    #     code.return_() # add LDC, PUTSTATIC
-    #
+    def doConstants(self):
+        self.classfile.addField("serialVersionUID",
+                                CodegenUtils.ci(java.lang.Long.TYPE), Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL)
+        code = self.classfile.addMethod("<clinit>", ProxyCodeHelpers.makeSig("V"), Modifier.STATIC)
+        code.visitLdcInsn(java.lang.Long(1))
+        code.putstatic(self.classfile.name, "serialVersionUID", CodegenUtils.ci(java.lang.Long.TYPE))
+        code.return_()
 
     def build(self, *args):
         JavaMaker.build(self, *args)
