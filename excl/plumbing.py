@@ -1,9 +1,11 @@
 import random
 import time
 
-from backtype.storm.topology.base import BaseBasicBolt, BaseRichBolt, BaseRichSpout
+from backtype.storm.topology.base import BaseRichBolt, BaseRichSpout
 from backtype.storm.tuple import Fields, Values
 from clamp import PackageProxy
+
+__all__ = ["WordSpout", "ExclamationBolt"]
 
 
 words = ["alice", "bob", "charles", "dana", "edward", "frances"]
@@ -11,7 +13,7 @@ words = ["alice", "bob", "charles", "dana", "edward", "frances"]
 
 class WordSpout(BaseRichSpout):
 
-    __proxymaker__ = PackageProxy("stretch")
+    __proxymaker__ = PackageProxy("otter")
 
     def open(self, conf, context, collector):
         self._collector = collector
@@ -24,16 +26,16 @@ class WordSpout(BaseRichSpout):
         declarer.declare(Fields(["word"]))
 
 
-class ExclamationBolt(BaseBasicBolt):
+class ExclamationBolt(BaseRichBolt):
 
-    __proxymaker__ = PackageProxy("stretch")
+    __proxymaker__ = PackageProxy("otter")
 
     def prepare(self, conf, context, collector):
         self._collector = collector
 
     def execute(self, t):
         self._collector.emit(t, Values([t.getString(0) + " - nahhhh!!!"]))
-        # self._collector.ack(t)
+        self._collector.ack(t)
 
     def declareOutputFields(self, declarer):
         declarer.declare(Fields(["word"]))

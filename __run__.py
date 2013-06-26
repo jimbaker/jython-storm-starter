@@ -1,10 +1,7 @@
-import time
-
-from backtype.storm import Config, LocalCluster
-from backtype.storm.tuple import Fields, Values
+from backtype.storm import Config, StormSubmitter
 from backtype.storm.topology import TopologyBuilder
 
-from plumbing import ExclamationBolt, WordSpout
+from excl.plumbing import ExclamationBolt, WordSpout
 
 
 def get_topology_builder():
@@ -19,19 +16,9 @@ def main():
     conf = Config()
     conf.setDebug(True)
     conf.setNumWorkers(2)
-
-    cluster = LocalCluster()
     builder = get_topology_builder()
-    cluster.submitTopology("exclamation", conf, builder.createTopology())
-    time.sleep(10)
-    cluster.killTopology("exclamation")
-    cluster.shutdown()
+    StormSubmitter.submitTopology("exclamation", conf, builder.createTopology())
 
 
-if __name__ == "__main__":
-    main()
-
-
-
-
+main()
 

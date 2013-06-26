@@ -7,7 +7,12 @@ from org.python.util import CodegenUtils
 from org.python.compiler import JavaMaker, ProxyCodeHelpers
 
 
+__all__ = ["PackageProxy", "SerializableProxies"]
+
+
 class SerializableProxies(JavaMaker):
+
+    serialized_path = "proxies"
     
     def doConstants(self):
         self.classfile.addField("serialVersionUID",
@@ -27,7 +32,7 @@ class SerializableProxies(JavaMaker):
         # Alternatively it would be nice to support parameter overloading in Jython
 
         if len(args) > 0:
-            path = os.path.join("extra_special", os.path.join(*self.myClass.split(".")) + ".class")
+            path = os.path.join(self.serialized_path, os.path.join(*self.myClass.split(".")) + ".class")
             parent = os.path.dirname(path)
             try:
                 os.makedirs(parent)
