@@ -4,15 +4,17 @@ import os.path
 
 from java.lang.reflect import Modifier
 from org.python.util import CodegenUtils
-from org.python.compiler import JavaMaker, ProxyCodeHelpers
+from org.python.compiler import CustomMaker, ProxyCodeHelpers
 
 
 __all__ = ["PackageProxy", "SerializableProxies"]
 
 
-class SerializableProxies(JavaMaker):
+class SerializableProxies(CustomMaker):
 
-    serialized_path = "proxies"
+    # NOTE: SerializableProxies is itself a java proxy, but it's not a custom one!
+
+    serialized_path = None
     
     def doConstants(self):
         self.classfile.addField("serialVersionUID",
@@ -22,24 +24,30 @@ class SerializableProxies(JavaMaker):
         code.putstatic(self.classfile.name, "serialVersionUID", CodegenUtils.ci(java.lang.Long.TYPE))
         code.return_()
 
-    def build(self, *args):
-        JavaMaker.build(self, *args)
-        # Intercept the side effect from call to super such that if args is
-        # available, then it is a ByteOutputStream and has contents we
-        # can get nondestructively
-        #
-        # This is such a hack; there should be a hook for this FIXME
-        # Alternatively it would be nice to support parameter overloading in Jython
-
-        if len(args) > 0:
+    def saveBytes(self, bytes):
+        if self.serialized_path:
             path = os.path.join(self.serialized_path, os.path.join(*self.myClass.split(".")) + ".class")
             parent = os.path.dirname(path)
+            print "Saving bytes for", self.myClass, "to", path
             try:
                 os.makedirs(parent)
             except OSError:
                 pass  # Directory exists
             with open(path, "wb") as f:
-                f.write(args[0].toByteArray())
+                f.write(bytes.toByteArray())
+
+    def makeClass(self):
+        print "Entering makeClass", self
+        try:
+            # If already defined on CLASSPATH, simply return this class
+            cls = java.lang.Class.forName(self.myClass)
+            print "Looked up proxy", self.myClass
+        except:
+            # Otherwise build it
+            print "Calling super..."
+            cls = CustomMaker.makeClass(self)
+            print "Built proxy", self.myClass
+        return cls
 
 
 class PackageProxy(object):
@@ -49,6 +57,6 @@ class PackageProxy(object):
     
     def __call__(self, superclass, interfaces, className, pythonModuleName, fullProxyName, mapping):
         """Constructs a usable proxy name that does not depend on ordering"""
-        print "Building a proxy for", self.package, superclass, interfaces, className, pythonModuleName, fullProxyName, mapping
+        print "Package proxy for", self.package, superclass, interfaces, className, pythonModuleName, fullProxyName, mapping
         return SerializableProxies(superclass, interfaces, className, pythonModuleName, self.package + "." + pythonModuleName + "." + className, mapping)
 
