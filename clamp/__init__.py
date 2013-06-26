@@ -49,8 +49,6 @@ class PackageProxy(object):
     
     def __call__(self, superclass, interfaces, className, pythonModuleName, fullProxyName, mapping):
         """Modifies className so it uses the package"""
-        # FIXME we should be able to use the Python package as well in defining 
-        # presumably from __file__?
         print "Building a proxy for", self.package, superclass, interfaces, className, pythonModuleName, fullProxyName, mapping
         return SerializableProxies(superclass, interfaces, className, pythonModuleName, self.package + "." + pythonModuleName + "." + className, mapping)
 
