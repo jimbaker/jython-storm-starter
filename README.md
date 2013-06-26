@@ -19,13 +19,15 @@ Two more steps:
 1. Build an "uber" jar file for Storm; this contains all necessary jars. Running `storm classpath` computes the necessary classpath for Storm dependencies:
 
 ~~~~
-$ CLASSPATH="$(storm classpath)" jython27 gen-storm-jar.py -o uber.jar -i excl -i clamp --proxy=excl.plumbing
+$ CLASSPATH="$(storm classpath)" jython27 gen-storm-jar.py \
+    -o uber.jar -i excl -i clamp --proxy=excl.plumbing
 ~~~~
 
 2. Run the topology. Either stand alone mode, using `run-exclamation-topology.py`, which was bundled in the uber jar step:
 
 ~~~~
-$ CLASSPATH="$(storm classpath):$(pwd)/uber.jar" java org.python.util.jython run-exclamation-topology.py
+$ CLASSPATH="$(storm classpath):$(pwd)/uber.jar" \
+    java org.python.util.jython run-exclamation-topology.py
 ~~~~
 
 or on the storm cluster by submitting the uber jar; the corresponding cluster submitting code is in `__run__.py`:
